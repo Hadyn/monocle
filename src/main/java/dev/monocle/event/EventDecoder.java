@@ -4,7 +4,7 @@ import org.web3j.protocol.websocket.events.Log;
 
 import java.util.function.Function;
 
-public interface EventDecoder<T> extends Function<Log, T> {
+public interface EventDecoder<T extends AbstractEvent> extends Function<Log, T> {
 
     /**
      * Decodes an event from a {@link Log}.

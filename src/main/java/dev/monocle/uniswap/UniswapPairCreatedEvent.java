@@ -1,6 +1,7 @@
 package dev.monocle.uniswap;
 
 import com.google.common.collect.Lists;
+import dev.monocle.event.AbstractEvent;
 import dev.monocle.event.EventDecoderException;
 import dev.monocle.event.EventValues;
 import org.web3j.abi.EventEncoder;
@@ -12,7 +13,7 @@ import org.web3j.protocol.websocket.events.Log;
 
 import java.math.BigInteger;
 
-public final class UniswapPairCreatedEvent {
+public final class UniswapPairCreatedEvent extends AbstractEvent {
 
     public static final Event DEFINITION = new Event(
         "PairCreated",

@@ -1,11 +1,12 @@
 package dev.monocle;
 
-import com.google.common.collect.Lists;
-import dev.monocle.uniswap.UniswapSyncEvent;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.methods.response.EthBlockNumber;
+import org.web3j.protocol.http.HttpService;
 import org.web3j.protocol.websocket.WebSocketClient;
 import org.web3j.protocol.websocket.WebSocketService;
 
+import java.math.BigInteger;
 import java.net.URI;
 
 public final class Monocle {
@@ -15,33 +16,31 @@ public final class Monocle {
     private static final String UNISWAP_DAI_ETH_ADDRESS = "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11";
 
     public static void main(String... args) throws Throwable {
+        HttpService httpService = new HttpService(
+            String.format("https://mainnet.infura.io/v3/%s", PROJECT_ID)
+        );
+
         WebSocketClient webSocketClient = new WebSocketClient(
             URI.create(String.format("wss://mainnet.infura.io/ws/v3/%s", PROJECT_ID))
         );
 
-        WebSocketService service = new WebSocketService(webSocketClient, false);
-        service.connect();
+        WebSocketService webSocketService = new WebSocketService(webSocketClient, false);
+        webSocketService.connect();
 
-        Web3j client = Web3j.build(service);
+        Web3j httpClient = Web3j.build(httpService);
+        Web3j socketClient = Web3j.build(webSocketService);
 
-        client
-            .newHeadsNotifications()
-            .map(Utils::extractResult)
-            .subscribe(head -> {
+        EthBlockNumber response = httpClient.ethBlockNumber().send();
+        BigInteger currentBlockNumber = response.getBlockNumber();
 
-            });
+        StaleStateSynchronizer synchronizer = new StaleStateSynchronizer(httpClient);
 
-        client
-            .logsNotifications(
-                Lists.newArrayList(UNISWAP_DAI_ETH_ADDRESS),
-                Lists.newArrayList(UniswapSyncEvent.ENCODED_SIGNATURE)
-            )
-            .map(Utils::extractResult)
-            .map(UniswapSyncEvent::decode)
-            .subscribe(event -> {
-                System.out.println(event.getReserve0());
-                System.out.println(event.getReserve1());
-            });
+        synchronizer.replay(
+            UNISWAP_FACTORY_ADDRESS,
+            BigInteger.valueOf(10_008_355),
+            currentBlockNumber,
+            BigInteger.valueOf(100_000)
+        );
     }
 }
 
