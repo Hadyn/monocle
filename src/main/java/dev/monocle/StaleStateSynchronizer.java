@@ -21,32 +21,32 @@ public final class StaleStateSynchronizer {
     @SuppressWarnings("unchecked")
     public void replay(
         String address,
-        BigInteger startingBlockNumber,
-        BigInteger endingBlockNumber,
-        BigInteger maximumSpan
+        long startingBlockNumber,
+        long endingBlockNumber,
+        long maximumSpan
     ) throws IOException {
-        BigInteger currentBlockNumber = new BigInteger(startingBlockNumber.toByteArray());
+        long currentBlockNumber = startingBlockNumber;
 
-        while (currentBlockNumber.compareTo(endingBlockNumber) != 0) {
-            BigInteger span = maximumSpan;
-            if (endingBlockNumber.compareTo(currentBlockNumber.add(maximumSpan)) < 0) {
-                span = endingBlockNumber.subtract(currentBlockNumber);
+        while (currentBlockNumber != endingBlockNumber) {
+            long span = maximumSpan;
+            if (currentBlockNumber + maximumSpan > endingBlockNumber) {
+                span = endingBlockNumber - currentBlockNumber;
             }
 
-            BigInteger fromBlockNumber = currentBlockNumber;
-            BigInteger toBlockNumber = fromBlockNumber.add(span);
+            long fromBlockNumber = currentBlockNumber;
+            long toBlockNumber = fromBlockNumber + span;
+
+            currentBlockNumber = currentBlockNumber + span
 
             EthLog logsResponse = client
                 .ethGetLogs(
                     new EthFilter(
-                        DefaultBlockParameter.valueOf(fromBlockNumber),
-                        DefaultBlockParameter.valueOf(toBlockNumber),
+                        DefaultBlockParameter.valueOf(BigInteger.valueOf(fromBlockNumber)),
+                        DefaultBlockParameter.valueOf(BigInteger.valueOf(toBlockNumber)),
                         Lists.newArrayList(address)
                     )
                 )
                 .send();
-
-            currentBlockNumber = currentBlockNumber.add(span);
 
             List<EthLog.LogResult> logs = logsResponse.getLogs();
             if (logs == null) {
