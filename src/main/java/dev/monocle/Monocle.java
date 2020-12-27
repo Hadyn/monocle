@@ -35,12 +35,18 @@ public final class Monocle {
 
         StaleStateSynchronizer synchronizer = new StaleStateSynchronizer(httpClient);
 
+        FreshStateSynchronizer fresh = new FreshStateSynchronizer(httpClient, socketClient);
+
         synchronizer.replay(
             UNISWAP_FACTORY_ADDRESS,
             BigInteger.valueOf(10_008_355),
             currentBlockNumber,
             BigInteger.valueOf(100_000)
         );
+
+        System.out.println("Finished Stale Sync");
+
+        fresh.replay();
     }
 }
 
