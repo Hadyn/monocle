@@ -2,6 +2,11 @@ plugins {
     id 'java'
 }
 
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'dev.monocle.Monocle'
+
 group 'org.example'
 version '1.0-SNAPSHOT'
 
@@ -13,4 +18,9 @@ dependencies {
     compile group: 'org.web3j', name: 'core', version: '4.8.2'
     compile group: 'com.google.guava', name: 'guava', version: '30.1-jre'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+}
+
+jar {
+    archiveBaseName = 'gs-gradle'
+    archiveVersion =  '0.1.0'
 }
